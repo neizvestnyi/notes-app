@@ -40,21 +40,21 @@ export default class NotesService {
   }
 
   async getAllNotes(): Promise<Note[]> {
-    const response = await this.api.get<ApiResponse<Note[]>>('/api/notes');
+    const response = await this.api.get<ApiResponse<Note[]>>('/api/v1/notes');
     return response.data.data;
   }
 
   async createNote(note: CreateNoteDto): Promise<Note> {
-    const response = await this.api.post<ApiResponse<Note>>('/api/notes', note);
+    const response = await this.api.post<ApiResponse<Note>>('/api/v1/notes', note);
     return response.data.data;
   }
 
   async updateNote(id: string, note: UpdateNoteDto): Promise<Note> {
-    const response = await this.api.put<ApiResponse<Note>>(`/api/notes/${id}`, note);
+    const response = await this.api.put<ApiResponse<Note>>(`/api/v1/notes/${id}`, note);
     return response.data.data;
   }
 
   async deleteNote(id: string): Promise<void> {
-    await this.api.delete(`/api/notes/${id}`);
+    await this.api.delete(`/api/v1/notes/${id}`);
   }
 }

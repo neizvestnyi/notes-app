@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using NotesApp.Api.Data;
 using NotesApp.Api.DTOs;
 using NotesApp.Api.Exceptions;
@@ -27,6 +28,13 @@ builder.Services.AddApiDocumentation();
 // Add HTTP context accessor for logging
 builder.Services.AddHttpContextAccessor();
 
+// Add memory caching
+builder.Services.AddMemoryCache();
+
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<NotesDbContext>("database");
+
 var app = builder.Build();
 
 ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
@@ -47,22 +55,32 @@ app.UseCors("AllowSPA");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Health check endpoint (no auth required)
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
 var useDevAuth = builder.Configuration.GetValue<bool>("UseDevAuthentication", false);
-app.MapGet("/health", () => 
+app.MapGet("/health/detailed", () => 
 {
     var healthData = new { 
         status = "healthy", 
         timestamp = DateTime.UtcNow, 
         environment = app.Environment.EnvironmentName,
-        authMode = useDevAuth ? "development" : "production" 
+        authMode = useDevAuth ? "development" : "production",
+        version = "1.0.0"
     };
     return healthData.ToApiResponse("System is healthy");
 })
-.WithName("HealthCheck")
+.WithName("DetailedHealthCheck")
 .WithOpenApi()
-.WithSummary("Health check endpoint")
-.WithDescription("Returns the current health status of the API");
+.WithSummary("Detailed health check")
+.WithDescription("Returns detailed health status including version and environment info");
 
 // Auth info endpoint for debugging (no auth required in dev)
 if (app.Environment.IsDevelopment())
@@ -83,9 +101,18 @@ if (app.Environment.IsDevelopment())
     .WithDescription("Development-only endpoint for debugging authentication");
 }
 
-// GET /api/notes - Get all notes
-app.MapGet("/api/notes", async (NotesDbContext db) =>
+var v1 = app.MapGroup("/api/v1");
+
+v1.MapGet("/notes", async (NotesDbContext db, IMemoryCache cache, ILogger<Program> logger) =>
 {
+    const string cacheKey = "all_notes";
+    
+    if (cache.TryGetValue<List<NoteDto>>(cacheKey, out var cachedNotes))
+    {
+        logger.LogInformation("Returning {Count} notes from cache", cachedNotes!.Count);
+        return cachedNotes.ToApiResponse($"Retrieved {cachedNotes.Count} notes successfully (cached)");
+    }
+    
     var notes = await db.Notes
         .OrderByDescending(n => n.UpdatedAtUtc)
         .Select(n => new NoteDto
@@ -98,6 +125,13 @@ app.MapGet("/api/notes", async (NotesDbContext db) =>
         })
         .ToListAsync();
     
+    var cacheOptions = new MemoryCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromMinutes(5))
+        .SetAbsoluteExpiration(TimeSpan.FromMinutes(15));
+    
+    cache.Set(cacheKey, notes, cacheOptions);
+    logger.LogInformation("Cached {Count} notes with 5 min sliding expiration", notes.Count);
+    
     return notes.ToApiResponse($"Retrieved {notes.Count} notes successfully");
 })
 .RequireAuthorization()
@@ -108,8 +142,7 @@ app.MapGet("/api/notes", async (NotesDbContext db) =>
 .Produces<ApiResponse<List<NoteDto>>>(200)
 .Produces<ApiResponse>(401);
 
-// GET /api/notes/{id} - Get note by ID
-app.MapGet("/api/notes/{id}", async (Guid id, NotesDbContext db) =>
+v1.MapGet("/notes/{id}", async (Guid id, NotesDbContext db) =>
 {
     var note = await db.Notes.FindAsync(id);
     
@@ -136,8 +169,7 @@ app.MapGet("/api/notes/{id}", async (Guid id, NotesDbContext db) =>
 .Produces<ApiResponse>(404)
 .Produces<ApiResponse>(401);
 
-// POST /api/notes - Create new note
-app.MapPost("/api/notes", async (CreateNoteDto dto, NotesDbContext db, IValidator<CreateNoteDto> validator) =>
+v1.MapPost("/notes", async (CreateNoteDto dto, NotesDbContext db, IValidator<CreateNoteDto> validator, IMemoryCache cache) =>
 {
     // Validate input
     var validationResult = await validator.ValidateAsync(dto);
@@ -159,6 +191,9 @@ app.MapPost("/api/notes", async (CreateNoteDto dto, NotesDbContext db, IValidato
     db.Notes.Add(note);
     await db.SaveChangesAsync();
     
+    // Invalidate cache after creating note
+    cache.Remove("all_notes");
+    
     var responseDto = new NoteDto
     {
         Id = note.Id,
@@ -168,7 +203,7 @@ app.MapPost("/api/notes", async (CreateNoteDto dto, NotesDbContext db, IValidato
         UpdatedAtUtc = note.UpdatedAtUtc
     };
     
-    return responseDto.ToCreatedApiResponse($"/api/notes/{note.Id}", "Note created successfully");
+    return responseDto.ToCreatedApiResponse($"/api/v1/notes/{note.Id}", "Note created successfully");
 })
 .RequireAuthorization()
 .WithName("CreateNote")
@@ -179,8 +214,7 @@ app.MapPost("/api/notes", async (CreateNoteDto dto, NotesDbContext db, IValidato
 .Produces<ApiResponse>(400)
 .Produces<ApiResponse>(401);
 
-// PUT /api/notes/{id} - Update existing note
-app.MapPut("/api/notes/{id}", async (Guid id, UpdateNoteDto dto, NotesDbContext db, IValidator<UpdateNoteDto> validator) =>
+v1.MapPut("/notes/{id}", async (Guid id, UpdateNoteDto dto, NotesDbContext db, IValidator<UpdateNoteDto> validator, IMemoryCache cache) =>
 {
     // Validate input
     var validationResult = await validator.ValidateAsync(dto);
@@ -200,6 +234,9 @@ app.MapPut("/api/notes/{id}", async (Guid id, UpdateNoteDto dto, NotesDbContext 
     note.UpdatedAtUtc = DateTime.UtcNow;
     
     await db.SaveChangesAsync();
+    
+    // Invalidate cache after updating note
+    cache.Remove("all_notes");
     
     var responseDto = new NoteDto
     {
@@ -222,8 +259,7 @@ app.MapPut("/api/notes/{id}", async (Guid id, UpdateNoteDto dto, NotesDbContext 
 .Produces<ApiResponse>(404)
 .Produces<ApiResponse>(401);
 
-// DELETE /api/notes/{id} - Delete note
-app.MapDelete("/api/notes/{id}", async (Guid id, NotesDbContext db) =>
+v1.MapDelete("/notes/{id}", async (Guid id, NotesDbContext db, IMemoryCache cache) =>
 {
     var note = await db.Notes.FindAsync(id);
     
@@ -232,6 +268,9 @@ app.MapDelete("/api/notes/{id}", async (Guid id, NotesDbContext db) =>
     
     db.Notes.Remove(note);
     await db.SaveChangesAsync();
+    
+    // Invalidate cache after deleting note
+    cache.Remove("all_notes");
     
     return ResultExtensions.ToNoContentApiResponse("Note deleted successfully");
 })
