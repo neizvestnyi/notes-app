@@ -15,3 +15,12 @@ export type UpdateNoteDto = {
   title: string;
   content?: string;
 }
+
+export type ApiResponse<T> = {
+  success: boolean;
+  data: T;
+  message?: string;
+  errors?: string[] | null;
+  timestamp: string;
+  traceId?: string;
+}

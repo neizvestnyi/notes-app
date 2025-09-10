@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { PublicClientApplication } from '@azure/msal-browser';
-import type { Note, CreateNoteDto, UpdateNoteDto } from '../types/Note';
+import type { Note, CreateNoteDto, UpdateNoteDto, ApiResponse } from '../types/Note';
 import { apiConfig, loginRequest } from '../config/authConfig';
 
 export default class NotesService {
@@ -40,21 +40,21 @@ export default class NotesService {
   }
 
   async getAllNotes(): Promise<Note[]> {
-    const response = await this.api.get<Note[]>('/notes');
-    return response.data;
+    const response = await this.api.get<ApiResponse<Note[]>>('/api/notes');
+    return response.data.data;
   }
 
   async createNote(note: CreateNoteDto): Promise<Note> {
-    const response = await this.api.post<Note>('/notes', note);
-    return response.data;
+    const response = await this.api.post<ApiResponse<Note>>('/api/notes', note);
+    return response.data.data;
   }
 
   async updateNote(id: string, note: UpdateNoteDto): Promise<Note> {
-    const response = await this.api.put<Note>(`/notes/${id}`, note);
-    return response.data;
+    const response = await this.api.put<ApiResponse<Note>>(`/api/notes/${id}`, note);
+    return response.data.data;
   }
 
   async deleteNote(id: string): Promise<void> {
-    await this.api.delete(`/notes/${id}`);
+    await this.api.delete(`/api/notes/${id}`);
   }
 }

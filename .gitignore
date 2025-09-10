@@ -15,6 +15,7 @@ api/.vscode/
 api/*.db
 api/*.db-shm
 api/*.db-wal
+api/logs/
 
 # Node.js
 spa/node_modules/
