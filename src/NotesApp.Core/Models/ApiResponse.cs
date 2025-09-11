@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace NotesApp.Core.Models;
 
 public class ApiResponse<T>

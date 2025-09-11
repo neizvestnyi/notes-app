@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace NotesApp.Api.Middleware;
+namespace NotesApp.WebApi.Middleware;
 
 public class RequestResponseLoggingMiddleware
 {

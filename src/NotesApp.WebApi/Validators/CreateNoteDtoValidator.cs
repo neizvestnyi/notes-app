@@ -1,5 +1,6 @@
 using FluentValidation;
 using NotesApp.Domain.DTOs;
+using NotesApp.Core.Helpers;
 
 namespace NotesApp.WebApi.Validators;
 

@@ -20,7 +20,7 @@ public abstract class BaseEntity
         UpdatedAtUtc = DateTime.UtcNow;
     }
 
-    public void UpdateTimestamp()
+    protected void UpdateTimestamp()
     {
         UpdatedAtUtc = DateTime.UtcNow;
     }

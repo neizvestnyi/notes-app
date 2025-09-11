@@ -31,6 +31,13 @@ The app was implemented on MacOS, where I cannot run LocalDB, that's why I choos
 
 Open http://localhost:5173
 
+5. **Run Tests**
+
+   ```bash
+   cd src
+   dotnet test
+   ```
+
 The app can use Entra ID auth (in prod) and local (based on VITE_USE_DEV_AUTH at .env and "UseDevAuthentication" at appsettings.Development.json) for local usage and development purposes. As soon as I didn't setup pipelines for this app, I left **Placeholder** for all Azure secrets, but I'll be happy to show how Entra ID works at my machine.
 
 ## What's Included
@@ -41,6 +48,7 @@ The app can use Entra ID auth (in prod) and local (based on VITE_USE_DEV_AUTH at
 - Entity Framework Core with SQL Server
 - Advanced pagination, search, and sorting
 - Swagger API documentation
+- Unit tests for business logic
 
 **Frontend:**
 

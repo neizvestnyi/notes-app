@@ -38,7 +38,7 @@ public class NoteRepository : Repository<Note>, INoteRepository
         {
             var searchLower = request.Search.ToLower();
             query = query.Where(n => n.Title.ToLower().Contains(searchLower) || 
-                                   n.Content.ToLower().Contains(searchLower));
+                                   (n.Content != null && n.Content.ToLower().Contains(searchLower)));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Title))
@@ -50,7 +50,7 @@ public class NoteRepository : Repository<Note>, INoteRepository
         if (!string.IsNullOrWhiteSpace(request.Content))
         {
             var contentLower = request.Content.ToLower();
-            query = query.Where(n => n.Content.ToLower().Contains(contentLower));
+            query = query.Where(n => n.Content != null && n.Content.ToLower().Contains(contentLower));
         }
 
         if (request.CreatedAfter.HasValue)
@@ -99,7 +99,7 @@ public class NoteRepository : Repository<Note>, INoteRepository
         Expression<Func<Note, object>> keySelector = sortBy.ToLower() switch
         {
             "title" => n => n.Title,
-            "content" => n => n.Content,
+            "content" => n => n.Content ?? string.Empty,
             "createdatutc" => n => n.CreatedAtUtc,
             "updatedatutc" or _ => n => n.UpdatedAtUtc,
         };

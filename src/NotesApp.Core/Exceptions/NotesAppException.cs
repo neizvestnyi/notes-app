@@ -1,4 +1,4 @@
-namespace NotesApp.Api.Exceptions;
+namespace NotesApp.Core.Exceptions;
 
 public abstract class NotesAppException : Exception
 {
