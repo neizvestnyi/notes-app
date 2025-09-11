@@ -12,7 +12,9 @@ import {
   Textarea,
   Field
 } from '@fluentui/react-components';
+import styles from './NoteDialog.module.css';
 import type { Note } from '../types/Note';
+
 
 interface NoteDialogProps {
   open: boolean;
@@ -52,7 +54,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({ open, note, onSave, onCancel })
       <DialogSurface>
         <DialogBody>
           <DialogTitle>{note ? 'Edit Note' : 'Create New Note'}</DialogTitle>
-          <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <DialogContent className={styles.content}>
             <Field label="Title" required>
               <Input
                 value={title}

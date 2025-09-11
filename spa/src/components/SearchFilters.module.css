@@ -1,0 +1,33 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.sortSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.errorText {
+  color: #d13438;
+  font-size: 12px;
+  margin-bottom: 8px;
+}

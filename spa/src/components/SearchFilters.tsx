@@ -6,39 +6,12 @@ import {
   Dropdown,
   Option,
   Checkbox,
-  makeStyles,
-  shorthands,
   Text
 } from '@fluentui/react-components';
+import styles from './SearchFilters.module.css';
 import { Search24Regular, Filter24Regular } from '@fluentui/react-icons';
 import type { NotesPagedRequest, SortField } from '../types/Note';
 
-const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    ...shorthands.gap('16px'),
-    ...shorthands.padding('16px'),
-    backgroundColor: '#f9f9f9',
-    ...shorthands.borderRadius('8px'),
-    marginBottom: '20px'
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'end',
-    ...shorthands.gap('12px'),
-    flexWrap: 'wrap'
-  },
-  searchBox: {
-    flexGrow: 1,
-    minWidth: '200px'
-  },
-  sortSection: {
-    display: 'flex',
-    alignItems: 'center',
-    ...shorthands.gap('8px')
-  }
-});
 
 interface SearchFiltersProps {
   filters: NotesPagedRequest;
@@ -60,7 +33,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = React.memo(({
   onSearch,
   loading = false
 }) => {
-  const styles = useStyles();
   const [localSearch, setLocalSearch] = useState(filters.search || '');
   const [localTitle, setLocalTitle] = useState(filters.title || '');
   const [localContent, setLocalContent] = useState(filters.content || '');
@@ -117,7 +89,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = React.memo(({
   return (
     <div className={styles.container}>
       {searchError && (
-        <Text style={{ color: '#d13438', fontSize: '12px', marginBottom: '8px' }}>
+        <Text className={styles.errorText}>
           {searchError}
         </Text>
       )}

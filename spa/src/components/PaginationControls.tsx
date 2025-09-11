@@ -1,10 +1,9 @@
 import React from 'react';
 import {
   Button,
-  Text,
-  makeStyles,
-  shorthands
+  Text
 } from '@fluentui/react-components';
+import styles from './PaginationControls.module.css';
 import {
   ChevronLeft24Regular,
   ChevronRight24Regular,
@@ -13,32 +12,6 @@ import {
 } from '@fluentui/react-icons';
 import type { PaginatedResponse } from '../types/Note';
 
-const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...shorthands.padding('16px', '0'),
-    flexWrap: 'wrap',
-    ...shorthands.gap('8px')
-  },
-  info: {
-    display: 'flex',
-    alignItems: 'center',
-    ...shorthands.gap('16px'),
-    flexWrap: 'wrap'
-  },
-  controls: {
-    display: 'flex',
-    alignItems: 'center',
-    ...shorthands.gap('8px')
-  },
-  pageNumbers: {
-    display: 'flex',
-    alignItems: 'center',
-    ...shorthands.gap('4px')
-  }
-});
 
 interface PaginationControlsProps {
   pagination: PaginatedResponse<any>;
@@ -51,7 +24,6 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   onPageChange,
   loading = false
 }) => {
-  const styles = useStyles();
 
   if (pagination.totalCount === 0) {
     return null;
@@ -98,7 +70,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           Showing {pagination.firstItemIndex}-{pagination.lastItemIndex} of {pagination.totalCount} notes
         </Text>
         {pagination.search && (
-          <Text style={{ fontStyle: 'italic', color: '#666' }}>
+          <Text className={styles.filterText}>
             Filtered by: "{pagination.search}"
           </Text>
         )}
@@ -134,7 +106,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
                 {pageNum}
               </Button>
             ) : (
-              <Text key={`ellipsis-${index}`} style={{ padding: '0 4px' }}>
+              <Text key={`ellipsis-${index}`} className={styles.ellipsis}>
                 {pageNum}
               </Text>
             )

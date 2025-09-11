@@ -1,0 +1,51 @@
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.errorContainer {
+  padding: 20px;
+  text-align: center;
+}
+
+.retryButton {
+  margin-top: 10px;
+}
+
+.emptyContainer {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.notesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.noteContent {
+  padding: 12px;
+}
+
+.noteContentText {
+  white-space: pre-wrap;
+}
+
+.noteActions {
+  display: flex;
+  gap: 8px;
+}

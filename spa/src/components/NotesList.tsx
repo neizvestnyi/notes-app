@@ -8,6 +8,7 @@ import {
   Caption1,
   Spinner
 } from '@fluentui/react-components';
+import styles from './NotesList.module.css';
 import { Add24Regular, Delete24Regular, Edit24Regular } from '@fluentui/react-icons';
 import NotesService from '../services/notesService';
 import type { Note, NotesPagedRequest, PaginatedResponse } from '../types/Note';
@@ -19,6 +20,7 @@ import PaginationControls from './PaginationControls';
 interface NotesListProps {
   notesService: NotesService;
 }
+
 
 const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
   const [pagination, setPagination] = useState<PaginatedResponse<Note> | null>(null);
@@ -116,8 +118,8 @@ const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Text size={600}>
           Your Notes {pagination && `(${pagination.totalCount})`}
         </Text>
@@ -138,19 +140,19 @@ const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
       />
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+        <div className={styles.loadingContainer}>
           <Spinner label="Loading notes..." />
         </div>
       ) : error ? (
-        <div style={{ padding: '20px', textAlign: 'center' }}>
+        <div className={styles.errorContainer}>
           <Text style={{ color: 'red' }}>{error}</Text>
           <br />
-          <Button onClick={() => loadNotes()} style={{ marginTop: '10px' }}>
+          <Button onClick={() => loadNotes()} className={styles.retryButton}>
             Retry
           </Button>
         </div>
       ) : notes.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+        <div className={styles.emptyContainer}>
           <Text>
             {pagination?.search || filters.title || filters.content 
               ? 'No notes match your search criteria.' 
@@ -159,12 +161,7 @@ const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
         </div>
       ) : (
         <>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-            gap: '16px',
-            marginBottom: '20px'
-          }}>
+          <div className={styles.notesGrid}>
             {notes.map((note) => (
               <Card key={note.id}>
                 <CardHeader
@@ -175,7 +172,7 @@ const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
                     </Caption1>
                   }
                   action={
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className={styles.noteActions}>
                       <Button 
                         icon={<Edit24Regular />} 
                         onClick={() => handleEditNote(note)}
@@ -190,8 +187,8 @@ const NotesList: React.FC<NotesListProps> = ({ notesService }) => {
                   }
                 />
                 {note.content && (
-                  <div style={{ padding: '12px' }}>
-                    <Text size={200} style={{ whiteSpace: 'pre-wrap' }}>
+                  <div className={styles.noteContent}>
+                    <Text size={200} className={styles.noteContentText}>
                       {note.content.length > 150 
                         ? `${note.content.substring(0, 150)}...` 
                         : note.content
