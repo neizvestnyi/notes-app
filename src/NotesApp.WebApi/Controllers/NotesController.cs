@@ -138,4 +138,24 @@ public class NotesController : ControllerBase
         var notes = await _noteService.SearchNotesAsync(searchTerm, cancellationToken);
         return Ok(ApiResponse<IEnumerable<NoteDto>>.CreateSuccess(notes, $"Found {notes.Count()} notes matching '{searchTerm}'"));
     }
+
+    /// <summary>
+    /// Get notes with pagination, search, and sorting
+    /// </summary>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(ApiResponse<PaginatedResponse<NoteDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<PaginatedResponse<NoteDto>>>> GetNotesPaged([FromQuery] NotesPagedRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _noteService.GetNotesPagedAsync(request, cancellationToken);
+        var message = $"Retrieved {result.Items.Count} of {result.TotalCount} notes (page {result.Page}/{result.TotalPages})";
+        
+        if (!string.IsNullOrWhiteSpace(result.Search))
+        {
+            message += $" matching '{result.Search}'";
+        }
+        
+        return Ok(ApiResponse<PaginatedResponse<NoteDto>>.CreateSuccess(result, message));
+    }
 }

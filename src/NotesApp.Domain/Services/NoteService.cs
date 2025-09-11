@@ -4,6 +4,7 @@ using NotesApp.Domain.DTOs;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Data.Entities;
 using NotesApp.Data.Interfaces;
+using NotesApp.Core.Models;
 
 namespace NotesApp.Domain.Services;
 
@@ -96,6 +97,22 @@ public class NoteService : INoteService
     {
         var notes = await _unitOfWork.Notes.SearchByTitleAsync(searchTerm, cancellationToken);
         return notes.Select(MapToDto);
+    }
+
+    public async Task<PaginatedResponse<NoteDto>> GetNotesPagedAsync(NotesPagedRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await _unitOfWork.Notes.GetNotesPagedAsync(request, cancellationToken);
+        
+        return new PaginatedResponse<NoteDto>
+        {
+            Items = result.Items.Select(MapToDto).ToList(),
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
+            Search = result.Search,
+            SortBy = result.SortBy,
+            SortDescending = result.SortDescending
+        };
     }
 
     private static NoteDto MapToDto(Note note)

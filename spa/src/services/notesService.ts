@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { PublicClientApplication } from '@azure/msal-browser';
-import type { Note, CreateNoteDto, UpdateNoteDto, ApiResponse } from '../types/Note';
+import type { Note, CreateNoteDto, UpdateNoteDto, ApiResponse, PaginatedResponse, NotesPagedRequest } from '../types/Note';
 import { apiConfig, loginRequest } from '../config/authConfig';
 
 export default class NotesService {
@@ -14,14 +14,10 @@ export default class NotesService {
       baseURL: apiConfig.baseUrl,
     });
 
-    // Add request interceptor for authentication
     this.api.interceptors.request.use(async (config) => {
       if (apiConfig.useDevAuth) {
-        // Development authentication - no token needed
         return config;
       }
-
-      // Production authentication
       try {
         const accounts = this.msalInstance.getAllAccounts();
         if (accounts.length > 0) {
@@ -56,5 +52,22 @@ export default class NotesService {
 
   async deleteNote(id: string): Promise<void> {
     await this.api.delete(`/api/v1/notes/${id}`);
+  }
+
+  async getNotesPagedAsync(request: NotesPagedRequest = {}): Promise<PaginatedResponse<Note>> {
+    const params = new URLSearchParams();
+    
+    if (request.page !== undefined) params.append('page', request.page.toString());
+    if (request.pageSize !== undefined) params.append('pageSize', request.pageSize.toString());
+    if (request.search) params.append('search', request.search);
+    if (request.title) params.append('title', request.title);
+    if (request.content) params.append('content', request.content);
+    if (request.createdAfter) params.append('createdAfter', request.createdAfter);
+    if (request.createdBefore) params.append('createdBefore', request.createdBefore);
+    if (request.sortBy) params.append('sortBy', request.sortBy);
+    if (request.sortDescending !== undefined) params.append('sortDescending', request.sortDescending.toString());
+
+    const response = await this.api.get<ApiResponse<PaginatedResponse<Note>>>(`/api/v1/notes/paged?${params}`);
+    return response.data.data;
   }
 }

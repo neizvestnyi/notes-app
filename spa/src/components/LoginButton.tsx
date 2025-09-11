@@ -8,7 +8,6 @@ const LoginButton: React.FC = () => {
 
   const handleLogin = () => {
     if (apiConfig.useDevAuth) {
-      // In development mode, we don't need actual login
       console.log('Development mode - authentication bypassed');
       return;
     }
@@ -20,7 +19,6 @@ const LoginButton: React.FC = () => {
 
   const handleLogout = () => {
     if (apiConfig.useDevAuth) {
-      // In development mode, just refresh the page
       window.location.reload();
       return;
     }

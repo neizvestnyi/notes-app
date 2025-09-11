@@ -77,7 +77,14 @@ public class PaginatedResponse<T>
     public int TotalCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    public string? Search { get; set; }
+    public string? SortBy { get; set; }
+    public bool SortDescending { get; set; }
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     public bool HasNextPage => Page < TotalPages;
     public bool HasPreviousPage => Page > 1;
+    public int? NextPage => HasNextPage ? Page + 1 : null;
+    public int? PreviousPage => HasPreviousPage ? Page - 1 : null;
+    public int FirstItemIndex => ((Page - 1) * PageSize) + 1;
+    public int LastItemIndex => Math.Min(Page * PageSize, TotalCount);
 }
