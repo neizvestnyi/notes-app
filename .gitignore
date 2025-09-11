@@ -17,6 +17,15 @@ api/*.db-shm
 api/*.db-wal
 api/logs/
 
+# .NET build outputs in src folder
+src/*/bin/
+src/*/obj/
+src/**/*.user
+src/**/*.suo
+src/.vs/
+src/.vscode/
+src/logs/
+
 # Node.js
 spa/node_modules/
 spa/.pnp

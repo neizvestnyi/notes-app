@@ -19,6 +19,6 @@ export const loginRequest = {
 };
 
 export const apiConfig = {
-  baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5076',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5209',
   useDevAuth,
 };
